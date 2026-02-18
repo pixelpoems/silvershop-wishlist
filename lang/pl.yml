@@ -1,0 +1,15 @@
+pl:
+  Pixelpoems\Wishlist\Models\WishList:
+    SINGULARNAME: 'Lista życzeń'
+    PLURALNAME: 'Listy życzeń'
+    NOITEMS: 'Twoja lista życzeń jest pusta.'
+    ADDLINK: "Dodaj do listy życzeń"
+    REMOVELINK: "Usuń z listy życzeń"
+  Pixelpoems\Wishlist\Models\WishListItem:
+    SINGULARNAME: 'Element listy życzeń'
+    PLURALNAME: 'Elementy listy życzeń'
+  Pixelpoems\Wishlist\Pages\WishListPage:
+    SINGULARNAME: 'Strona listy życzeń'
+    PLURALNAME: 'Strony listy życzeń'
+    Title: 'Lista życzeń'
+    REMOVEALL: 'Usuń wszystkie artykuły'

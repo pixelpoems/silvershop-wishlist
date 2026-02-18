@@ -1,0 +1,49 @@
+{
+    "name": "pixelpoems/silvershop-wishlist",
+    "type": "silverstripe-vendormodule",
+    "description": "Silverstripe Wishlist Module for Silvershop, allowing customers to create and manage a single wishlist.",
+    "keywords": [
+        "silverstripe",
+        "silvershop",
+        "wishlist",
+        "ecommerce"
+    ],
+    "authors": [
+        {
+            "name": "Bettina Wagner-Löffler",
+            "homepage": "https://www.pixelpoems.com/",
+            "role": "Lead Developer"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": "^8.3 || ^8.4",
+        "silverstripe/cms": "^6.0",
+        "silvershop/core": "^6"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pixelpoems\\Wishlist\\": "src/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "silverstripe/vendor-plugin": true
+        }
+    },
+    "extra": {
+        "installer-name": "silvershop-wishlist",
+        "branch-alias": {
+            "dev-main": "1.x-dev"
+        },
+        "expose": [
+            "client/dist/"
+        ]
+    },
+    "license": "BSD-3-Clause"
+}

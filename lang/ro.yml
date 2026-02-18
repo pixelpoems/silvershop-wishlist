@@ -1,0 +1,15 @@
+ro:
+  Pixelpoems\Wishlist\Models\WishList:
+    SINGULARNAME: 'Lista de dorințe'
+    PLURALNAME: 'Liste de dorințe'
+    NOITEMS: 'Lista ta de dorințe este goală.'
+    ADDLINK: "Adaugă la lista de dorințe"
+    REMOVELINK: "Elimină din lista de dorințe"
+  Pixelpoems\Wishlist\Models\WishListItem:
+    SINGULARNAME: 'Articol listă de dorințe'
+    PLURALNAME: 'Articole listă de dorințe'
+  Pixelpoems\Wishlist\Pages\WishListPage:
+    SINGULARNAME: 'Pagină listă de dorințe'
+    PLURALNAME: 'Pagini listă de dorințe'
+    Title: 'Lista de dorințe'
+    REMOVEALL: 'Elimină toate articolele'

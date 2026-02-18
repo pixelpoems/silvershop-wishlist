@@ -1,0 +1,14 @@
+---
+Name: pp-wishlist--config
+---
+PageController:
+  extensions:
+    - Pixelpoems\Wishlist\Extensions\PageControllerExtension
+
+SilverShop\Page\Product:
+  extensions:
+    - Pixelpoems\Wishlist\Extensions\CanAddToWishListExtension
+
+SilverShop\Model\Variation\Variation:
+  extensions:
+    - Pixelpoems\Wishlist\Extensions\CanAddToWishListExtension

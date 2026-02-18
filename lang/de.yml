@@ -1,0 +1,15 @@
+de:
+  Pixelpoems\Wishlist\Models\WishList:
+    SINGULARNAME: 'Wunschliste'
+    PLURALNAME: 'Wunschlisten'
+    NOITEMS: 'Ihre Wunschliste ist leer.'
+    ADDLINK: "Zur Wunschliste hinzufügen"
+    REMOVELINK: "Von Wunschliste entfernen"
+  Pixelpoems\Wishlist\Models\WishListItem:
+    SINGULARNAME: 'Wunschlisten-Artikel'
+    PLURALNAME: 'Wunschlisten-Artikel'
+  Pixelpoems\Wishlist\Pages\WishListPage:
+    SINGULARNAME: 'Wunschlisten-Seite'
+    PLURALNAME: 'Wunschlisten-Seiten'
+    Title: 'Wunschliste'
+    REMOVEALL: 'Alle Artikel entfernen'

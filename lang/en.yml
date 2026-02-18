@@ -1,0 +1,15 @@
+en:
+  Pixelpoems\Wishlist\Models\WishList:
+    SINGULARNAME: 'Wish List'
+    PLURALNAME: 'Wish Lists'
+    NOITEMS: 'Your wish list is empty.'
+    ADDLINK: "Add to Wish List"
+    REMOVELINK: "Remove from Wish List"
+  Pixelpoems\Wishlist\Models\WishListItem:
+    SINGULARNAME: 'Wish List Item'
+    PLURALNAME: 'Wish List Items'
+  Pixelpoems\Wishlist\Pages\WishListPage:
+    SINGULARNAME: 'Wish List Page'
+    PLURALNAME: 'Wish List Pages'
+    Title: 'Wish List'
+    REMOVEALL: 'Remove All Items'

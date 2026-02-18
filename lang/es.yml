@@ -1,0 +1,15 @@
+es:
+  Pixelpoems\Wishlist\Models\WishList:
+    SINGULARNAME: 'Lista de deseos'
+    PLURALNAME: 'Listas de deseos'
+    NOITEMS: 'Tu lista de deseos está vacía.'
+    ADDLINK: "Añadir a lista de deseos"
+    REMOVELINK: "Eliminar de lista de deseos"
+  Pixelpoems\Wishlist\Models\WishListItem:
+    SINGULARNAME: 'Artículo de lista de deseos'
+    PLURALNAME: 'Artículos de lista de deseos'
+  Pixelpoems\Wishlist\Pages\WishListPage:
+    SINGULARNAME: 'Página de lista de deseos'
+    PLURALNAME: 'Páginas de lista de deseos'
+    Title: 'Lista de deseos'
+    REMOVEALL: 'Eliminar todos los artículos'
