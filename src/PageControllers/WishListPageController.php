@@ -179,7 +179,7 @@ class WishListPageController extends PageController
 
     public function RemoveAllLink()
     {
-        return SecurityToken::inst()->addToUrl($this->Link('remove-all'));
+        return SecurityToken::inst()->addToUrl($this->Link('remove_all'));
     }
 
 //    public function DeleteListLink()

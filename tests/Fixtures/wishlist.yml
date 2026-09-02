@@ -1,0 +1,46 @@
+# Fixture data shared by the tests in tests/Unit and tests/Functional.
+#
+# NOTE: Product/Variation field names below (BasePrice, Price, ...) are best
+# guesses based on how this module's code uses silvershop/core (sellingPrice(),
+# Price.Nice, Variations()). Run `composer install` and check the actual
+# SilverShop\Page\Product / SilverShop\Model\Variation\Variation schema once
+# vendor/ is available, and adjust if needed.
+
+SilverStripe\Security\Member:
+  member1:
+    Email: member1@example.com
+    FirstName: Member
+    Surname: One
+  member2:
+    Email: member2@example.com
+    FirstName: Member
+    Surname: Two
+
+SilverShop\Page\Product:
+  product1:
+    Title: Test Product One
+    BasePrice: 19.99
+  product2:
+    Title: Test Product Two (no variations)
+    BasePrice: 5.00
+  productWithVariations:
+    Title: Test Product With Variations
+    BasePrice: 10.00
+
+SilverShop\Model\Variation\Variation:
+  variation1:
+    Product: =>SilverShop\Page\Product.productWithVariations
+    Price: 12.99
+
+# member1 already has a wish list; member2 does not, so tests can cover both
+# the "list already exists" and "list gets created on first use" paths.
+Pixelpoems\Wishlist\Models\WishList:
+  list1:
+    Title: Wish List
+    Owner: =>SilverStripe\Security\Member.member1
+
+Pixelpoems\Wishlist\Models\WishListItem:
+  item1:
+    WishList: =>Pixelpoems\Wishlist\Models\WishList.list1
+    BuyableID: =>SilverShop\Page\Product.product1
+    BuyableClassName: SilverShop\Page\Product

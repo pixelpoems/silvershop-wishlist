@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pixelpoems\Wishlist\Models;
 
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBField;
 
 class WishListItem extends DataObject
 {
@@ -71,7 +72,14 @@ class WishListItem extends DataObject
     public function getUnitPriceAsMoney()
     {
         $price = $this->UnitPrice();
-        return $price ? $price->Nice() : null;
+        if ($price === null) {
+            return null;
+        }
+
+        // sellingPrice() (called via getUnitPrice()) returns a plain
+        // float, not a Money/Currency object, so it has no ->Nice() of
+        // its own - cast it through DBCurrency to get one.
+        return DBField::create_field('Currency', $price)->Nice();
     }
 
     public function UnitPriceAsMoney()
@@ -86,8 +94,18 @@ class WishListItem extends DataObject
             return '';
         }
 
-        $item = $buyable->hasMethod('Item') ? $buyable->Item() : null;
-        return $item ? $item->TableTitle() : $buyable->Title;
+        // NOTE: buyable->Item() (both Product and Variation implement it
+        // via the Buyable interface) returns a shopping-cart OrderItem,
+        // not something describing the buyable itself - its TableTitle()
+        // is just the generic OrderItem singular name (e.g. "Item"), not
+        // the product's name. Build the display title directly instead,
+        // mirroring how WishList_Items.ss composes it manually.
+        $product = $buyable->hasMethod('Product') ? $buyable->Product() : null;
+        if ($product && $product->exists()) {
+            return trim($product->Title . ' ' . $buyable->Title);
+        }
+
+        return $buyable->Title;
     }
 
     public function SubTitle()
@@ -97,6 +115,10 @@ class WishListItem extends DataObject
             return '';
         }
 
-        return $buyable->hasMethod('Item') ? $buyable->Item()->SubTitle() : '';
+        // For a Variation, its own Title is the attribute description
+        // (e.g. "Colour: Red, Size: L") - a plain Product has no
+        // meaningful subtitle.
+        $product = $buyable->hasMethod('Product') ? $buyable->Product() : null;
+        return ($product && $product->exists()) ? (string) $buyable->Title : '';
     }
 }

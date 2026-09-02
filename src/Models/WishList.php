@@ -79,8 +79,8 @@ class WishList extends DataObject
     protected function onBeforeWrite()
     {
         parent::onBeforeWrite();
-        if (!$this->OwnerID) {
-            $this->OwnerID = Security::getCurrentUser()->ID;
+        if (!$this->OwnerID && ($currentUser = Security::getCurrentUser())) {
+            $this->OwnerID = $currentUser->ID;
         }
     }
 
@@ -133,11 +133,17 @@ class WishList extends DataObject
             return false;
         }
 
-        if (!$this->hasBuyable($item)) {
+        $existing = WishListItem::get()->filter([
+            'WishListID' => $this->ID,
+            'BuyableClassName' => $item->ClassName,
+            'BuyableID' => $item->ID,
+        ])->first();
+
+        if (!$existing) {
             return false;
         }
 
-        $item->WishListItem()->delete();
+        $existing->delete();
         return true;
     }
 
