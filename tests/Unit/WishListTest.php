@@ -25,7 +25,6 @@ class WishListTest extends SapphireTest
         // that SapphireTest does not reset between tests, so clear it here
         // to keep tests isolated from each other.
         $property = new ReflectionProperty(WishList::class, 'current');
-        $property->setAccessible(true);
         $property->setValue(null, null);
     }
 

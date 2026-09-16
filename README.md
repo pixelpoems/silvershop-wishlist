@@ -4,7 +4,7 @@ A [Silverstripe](https://www.silverstripe.org/) module that adds a single wishli
 
 ## Requirements
 
-- PHP ^8.3 || ^8.4
+- PHP ^8.3 || ^8.4 || ^8.5
 - `silverstripe/cms` ^6.0
 - `silvershop/core` ^6
 
