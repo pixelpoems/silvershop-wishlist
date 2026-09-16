@@ -73,3 +73,6 @@ This module is a work in progress:
 Please [create an issue](https://github.com/pixelpoems/silvershop-wishlist/issues) for any bugs you've found, or
 features you're missing.
 
+## Credits
+
+Icons from Font Awesome - https://fontawesome.com

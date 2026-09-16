@@ -48,7 +48,7 @@ class WishListPage extends Page
 
         $sanitisedClassname = str_replace('\\', '-', $className);
 
-        $url = sprintf('%sadd/%d/%s', self::inst()->Link(), $id, $sanitisedClassname);
+        $url = sprintf('%s/add/%d/%s', self::inst()->Link(), $id, $sanitisedClassname);
         return SecurityToken::inst()->addToUrl($url);
     }
 
@@ -64,7 +64,7 @@ class WishListPage extends Page
 
         $sanitisedClassname = str_replace('\\', '-', $className);
 
-        $url = sprintf('%sremove/%d/%s', self::inst()->Link(), $id, $sanitisedClassname);
+        $url = sprintf('%s/remove/%d/%s', self::inst()->Link(), $id, $sanitisedClassname);
         return SecurityToken::inst()->addToUrl($url);
     }
 

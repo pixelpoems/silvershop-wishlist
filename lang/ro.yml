@@ -5,6 +5,7 @@ ro:
     NOITEMS: 'Lista ta de dorințe este goală.'
     ADDLINK: "Adaugă la lista de dorințe"
     REMOVELINK: "Elimină din lista de dorințe"
+    NOTPURCHASEABLE: "Acest articol nu este disponibil pentru cumpărare."
   Pixelpoems\Wishlist\Models\WishListItem:
     SINGULARNAME: 'Articol listă de dorințe'
     PLURALNAME: 'Articole listă de dorințe'

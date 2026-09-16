@@ -1,48 +1,47 @@
-.wishlist a.action-wishlist{
+.wishlist a.action-wishlist {
     position: relative;
     z-index: 2;
 }
 
 ul.wishlist {
-	list-style: none;
-	margin:0;
-	padding:0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
 
-	li {
-		a {
-			text-decoration: none;
-			font-weight: 700;
-			font-size: var(--fs-sm);
+    li {
+        a {
+            text-decoration: none;
+            font-weight: 700;
+            font-size: small;
 
-			svg {
-				width: 22px;
-				height: 22px;
-				fill: white;
-				//stroke: black;
-			}
+            svg {
+                width: 22px;
+                height: 22px;
+                fill: gray;
+                //stroke: black;
+            }
 
 
+            &:hover {
 
-			&:hover{
-
-				svg {
-					color: var(--blue);
-                    fill: var(--blue);
-					//stroke: var(--blue);
-				}
-			}
+                svg {
+                    color: black;
+                    fill: black;
+                    //stroke: black;
+                }
+            }
 
 
             &.ajax--remove-from-wishlist-link {
                 svg {
-                    color: var(--blue);
-                    fill: var(--blue);
+                    color: black;
+                    fill: black;
                 }
             }
-		}
+        }
 
 
-	}
+    }
 
     &.hide {
         display: none;
@@ -56,17 +55,18 @@ ul.wishlist {
     position: relative;
     width: 22px;
     height: 22px;
+
     div {
         box-sizing: border-box;
         display: block;
         position: absolute;
-        width: 22px;
-        height: 22px;
+        width: 18px;
+        height: 18px;
         margin: 2px;
-        border: 2px solid var(--blue);
+        border: 2px solid black;
         border-radius: 50%;
         animation: loading-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-        border-color: var(--blue) transparent transparent transparent;
+        border-color: black transparent transparent transparent;
 
         &:nth-child(1) {
             animation-delay: -0.45s;
@@ -88,5 +88,20 @@ ul.wishlist {
     }
     100% {
         transform: rotate(360deg);
+    }
+}
+
+li#wishlist-menu-item {
+    list-style: none;
+
+    svg {
+        width: 25px;
+        fill: gray;
+    }
+}
+
+.action-wishlist {
+    svg {
+        width: 25px;
     }
 }

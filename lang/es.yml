@@ -5,6 +5,7 @@ es:
     NOITEMS: 'Tu lista de deseos está vacía.'
     ADDLINK: "Añadir a lista de deseos"
     REMOVELINK: "Eliminar de lista de deseos"
+    NOTPURCHASEABLE: "Este artículo no está disponible para su compra."
   Pixelpoems\Wishlist\Models\WishListItem:
     SINGULARNAME: 'Artículo de lista de deseos'
     PLURALNAME: 'Artículos de lista de deseos'

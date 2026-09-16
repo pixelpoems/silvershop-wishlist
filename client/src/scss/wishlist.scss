@@ -1,27 +1,20 @@
-$xs: var(--w-xs);
-$sm: var(--w-sm);
-$md: var(--w-md);
-$lg: var(--w-lg);
-$xl: var(--w-xl);
-$full: var(--w-full);
-
 @mixin for-phone-only {
     @media (max-width: 599px) { @content; }
 }
 @mixin for-tablet-portrait-up {
     @media (min-width: 600px) { @content; }
 }
-@mixin w-container($size : var(--w-md)) {
+@mixin w-container($size: 960px) {
     margin-left: auto;
     margin-right: auto;
-    @if not ($size == var(--w-full)) {
+    @if not ($size == 'full') {
         max-width: $size;
         width: 90vw;
         @include for-tablet-portrait-up {
             width: 85vw;
         }
     }
-    @if $size == var(--w-full) {
+    @if $size == 'full' {
         width: 100%;
         max-width: none;
     }
@@ -33,14 +26,14 @@ $full: var(--w-full);
 
 .wishlist-page {
 	.container{
-		@include w-container($xs);
+		@include w-container(480px);
 	}
 	table.wishlist__table {
 		tr {
 			@include for-phone-only {
 				display: grid;
 				grid-template-columns: 30% 1fr 1fr;
-				padding:var(--space-xxs) 0;
+				padding: 4px 0;
 				align-items: center;
 				td.image {
                 	width:auto;
@@ -66,7 +59,7 @@ $full: var(--w-full);
 					opacity: 0.5;
 				}
 
-				color:var(--gray);
+				color: gray;
 			}
 		}
 
@@ -90,6 +83,12 @@ $full: var(--w-full);
 			width: 2%;
 			padding:0;
 		}
+
+        svg {
+            width: 22px;
+            height: 22px;
+            fill: gray;
+        }
 	}
 
 	ul.wishListActions{
@@ -98,3 +97,4 @@ $full: var(--w-full);
 		list-style: none;
 	}
 }
+

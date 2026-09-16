@@ -5,6 +5,7 @@ pl:
     NOITEMS: 'Twoja lista życzeń jest pusta.'
     ADDLINK: "Dodaj do listy życzeń"
     REMOVELINK: "Usuń z listy życzeń"
+    NOTPURCHASEABLE: "Ten produkt nie jest dostępny w sprzedaży."
   Pixelpoems\Wishlist\Models\WishListItem:
     SINGULARNAME: 'Element listy życzeń'
     PLURALNAME: 'Elementy listy życzeń'

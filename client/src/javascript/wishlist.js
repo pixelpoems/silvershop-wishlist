@@ -36,16 +36,15 @@ function initWishlistButton(button) {
     if(!productID) return;
 
     // We want to replace the nav item and the product actions
-    let divsToReplace = ['#wishlist-menu-item'];
+    let divsToReplace = ['#wishlist-menu-item', '.product--actions-' + productID];
 
     button.addEventListener('click', (e) => {
         e.preventDefault();
 
         // Hide button and show loading
         button.style.display = 'none';
-        let actionHolder = button.parentElement;
         let loading = createLoadingNode();
-        actionHolder.appendChild(loading);
+        button.insertAdjacentElement('afterend', loading);
 
         // Fetch the wishlist page
         fetch(button.getAttribute('href'), {
@@ -62,7 +61,7 @@ function initWishlistButton(button) {
 
             // Display button and remove loading
             button.style.display = 'unset';
-            actionHolder.removeChild(loading);
+            loading.remove();
 
         }).catch((e) => {
             // console.error(e);
@@ -70,7 +69,7 @@ function initWishlistButton(button) {
 
             // Display button and remove loading
             button.style.display = 'unset';
-            actionHolder.removeChild(loading);
+            loading.remove();
 
         });
     });
@@ -110,32 +109,19 @@ export function handleClassUpdates(productID, currentlyOnWishlist) {
 
         // Update the href based on the new class
         if(currentlyOnWishlist) {
-            // New state is ADD to wishlist
+            // New state is ADD to wishlist (item was just removed)
             element.classList.remove('ajax--remove-from-wishlist-link');
             element.classList.add('ajax--add-to-wishlist-link');
             element.href = element.dataset.addHref;
-            //handleSVGUpdate(element, 'heart-btn', 'heart');
             handleDescriptionUpdate(element, element.dataset.addDescription);
         } else {
-            // New state is REMOVE from wishlist
+            // New state is REMOVE from wishlist (item was just added)
             element.classList.add('ajax--remove-from-wishlist-link');
             element.classList.remove('ajax--add-to-wishlist-link');
             element.href = element.dataset.removeHref;
-            //handleSVGUpdate(element, 'heart-minus-btn', 'heart-minus');
             handleDescriptionUpdate(element, element.dataset.removeDescription);
         }
     });
-}
-
-function handleSVGUpdate(element, newID, newSvgID) {
-    let svg = element.querySelector('svg');
-    if(!svg) return;
-
-    svg.ariaLabeldBy = newID;
-    let title = svg.querySelector('title');
-    title.id = newID;
-    title.innerHTML = newSvgID;
-    svg.querySelector('use').setAttribute('href', svg.dataset.baseHref + '#' + newSvgID);
 }
 
 function handleDescriptionUpdate(element, description) {

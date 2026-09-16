@@ -1,0 +1,34 @@
+<li class="silvershop-product-card" <% include SilverShop\Includes\SchemaOrg\ProductScope %>>
+    <% if $Image %>
+        <a class="silvershop-product-card__image-link" href="$Link" title="<%t SilverShop\Generic.ReadMoreTitle "Click here to read more on &quot;{Title}&quot;" Title=$Title %>">
+            <img class="silvershop-product-card__image" <% include SilverShop\Includes\SchemaOrg\ProductImage %> src="$Image.getThumbnail.URL" alt="<%t SilverShop\Page\Product.ImageAltText "{Title} image" Title=$Title %>" />
+        </a>
+    <% else %>
+        <a href="$Link" title="<%t SilverShop\Generic.ReadMoreTitle "Click here to read more on &quot;{Title}&quot;" Title=$Title %>" class="silvershop-product-card__no-image"><!-- no image --></a>
+    <% end_if %>
+    <h3 class="silvershop-product-card__title"><a class="silvershop-product-card__title-link" <% include SilverShop\Includes\SchemaOrg\ProductName %> href="$Link" title="<%t SilverShop\Generic.ReadMoreTitle "Click here to read more on &quot;{Title}&quot;" Title=$Title %>">$Title</a></h3>
+    <% if $Model %><p class="silvershop-product-card__model"><strong><%t SilverShop\Page\Product.Model "Model" %>:</strong> $Model.XML</p><% end_if %>
+    <div class="silvershop-product-card__actions">
+        <% include SilverShop\Includes\Price %>
+        <% if $View %>
+            <div class="silvershop-product-card__view">
+                <a class="silvershop-product-card__view-link" href="$Link" title="<%t SilverShop\Generic.ReadMoreTitle "Click here to read more on &quot;{Title}&quot;" Title=$Title %>">
+                    <%t SilverShop\Page\Product.View "View Product" %>
+                </a>
+            </div>
+        <% else %>
+            <% if $canPurchase %>
+            <div class="silvershop-product-card__add">
+                <a class="silvershop-product-card__add-link" href="$addLink" title="<%t SilverShop\Page\Product.AddToCartTitle "Add &quot;{Title}&quot; to your cart" Title=$Title %>">
+                    <%t SilverShop\Page\Product.AddToCart "Add to Cart" %>
+                    <% if $IsInCart %>
+                        ($Item.Quantity)
+                    <% end_if %>
+                </a>
+            </div>
+            <% end_if %>
+        <% end_if %>
+        <% include Pixelpoems\Wishlist\Includes\Product_WishListAction ProductID=$ID, Size=sm %>
+
+    </div>
+</li>
