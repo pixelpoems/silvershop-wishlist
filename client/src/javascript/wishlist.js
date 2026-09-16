@@ -3,9 +3,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function init() {
-    const wishlistButtons = document.querySelectorAll('.action-wishlist');
-    wishlistButtons.forEach(button => {
-        initWishlistButton(button);
+    // Use event delegation instead of binding to each button directly. Buttons get
+    // replaced wholesale (outerHTML) after every ajax add/remove, which would drop
+    // a directly-attached listener and cause the *next* click to fall back to a
+    // normal page navigation instead of the ajax request.
+    document.addEventListener('click', (e) => {
+        const button = e.target.closest('.action-wishlist');
+        if (!button) return;
+
+        handleWishlistButtonClick(button, e);
     });
 
     const wishlistItemContainer = document.querySelector('#WishListItems');
@@ -31,47 +37,45 @@ function init() {
     });
 }
 
-function initWishlistButton(button) {
+function handleWishlistButtonClick(button, e) {
     let productID = button.dataset.productId;
     if(!productID) return;
+
+    e.preventDefault();
 
     // We want to replace the nav item and the product actions
     let divsToReplace = ['#wishlist-menu-item', '.product--actions-' + productID];
 
-    button.addEventListener('click', (e) => {
-        e.preventDefault();
+    // Hide button and show loading
+    button.style.display = 'none';
+    let loading = createLoadingNode();
+    button.insertAdjacentElement('afterend', loading);
 
-        // Hide button and show loading
-        button.style.display = 'none';
-        let loading = createLoadingNode();
-        button.insertAdjacentElement('afterend', loading);
+    // Fetch the wishlist page
+    fetch(button.getAttribute('href'), {
+        method: 'GET',
+    }).then(async response => {
+        return response.text();
+    }).then(html => {
 
-        // Fetch the wishlist page
-        fetch(button.getAttribute('href'), {
-            method: 'GET',
-        }).then(async response => {
-            return response.text();
-        }).then(html => {
+        // Replace the wishlist relevant divs
+        handleReplacement(divsToReplace, html);
 
-            // Replace the wishlist relevant divs
-            handleReplacement(divsToReplace, html);
+        // Update the wishlist link classes
+        handleClassUpdates(productID, button.classList.contains('ajax--remove-from-wishlist-link'));
 
-            // Update the wishlist link classes
-            handleClassUpdates(productID, button.classList.contains('ajax--remove-from-wishlist-link'));
+        // Display button and remove loading
+        button.style.display = 'unset';
+        loading.remove();
 
-            // Display button and remove loading
-            button.style.display = 'unset';
-            loading.remove();
+    }).catch((e) => {
+        // console.error(e);
+        console.error('Something went wrong!');
 
-        }).catch((e) => {
-            // console.error(e);
-            console.error('Something went wrong!');
+        // Display button and remove loading
+        button.style.display = 'unset';
+        loading.remove();
 
-            // Display button and remove loading
-            button.style.display = 'unset';
-            loading.remove();
-
-        });
     });
 }
 
