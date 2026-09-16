@@ -26,6 +26,10 @@ class WishListPage extends Page
      */
     private static bool $auto_create_page = true;
 
+    private static bool $load_default_css = true;
+
+    private static bool $load_default_js = true;
+
     public function getControllerName(): string
     {
         return WishListPageController::class;

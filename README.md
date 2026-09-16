@@ -41,6 +41,15 @@ Every logged-in member has one wishlist, created automatically the first time th
 Pixelpoems\Wishlist\Pages\WishListPage:
   auto_create_page: false
 ```
+## CSS and JS Coming along
+This module comes with basic CSS and JS to make the wishlist button and nav badge look nice, but you will likely want to customize it for your theme. The module's CSS/JS is loaded automatically via Silverstripe's `Requirements` API, but you can disable that and load your own files instead:
+
+```yaml
+Pixelpoems\Wishlist\Pages\WishListPage:
+  load_default_css: false
+  load_default_js: false
+```
+The Wishlist logic is also working without js - so then the add/remove button will reload the page to update the nav badge and button state. The JS is just a progressive enhancement to avoid full page reloads.
 
 ## Usage in templates
 
@@ -53,10 +62,22 @@ Render the wishlist nav badge (e.g. in your header):
 Render an add/remove button on a product/variation (see `CanAddToWishListExtension`):
 
 ```silverstripe
-<a href="$WishListAddLink" class="action-wishlist" data-product-id="$ID">...</a>
+<% include Pixelpoems\Wishlist\Includes\Product_WishListAction ProductID=$ID %>
 ```
 
-The bundled `wishlist.js` progressively enhances any `.action-wishlist` button: it intercepts the click, fetches the add/remove link via AJAX, swaps in the updated nav badge, and toggles the button's add/remove state without a full page reload.
+`ProductID` should always be the *product's* ID (not the variation's) - pass `$Up.ID` when looping over `$Variations`, and add `Variation=true` in that case so the markup gets a `variation--actions-{$ID}` id/class alongside the shared `product--actions-{$ProductID}` one. Pass `Size=sm` to render an icon-only button (no text label), which is the default for anything but `sm`.
+
+The bundled `wishlist.js` progressively enhances any `.action-wishlist` button: it intercepts the click, fetches the add/remove link via AJAX, replaces the button's `product--actions-{$ProductID}` container (and the nav badge) with the freshly rendered HTML from the response, and toggles the button's add/remove state without a full page reload.
+
+### Customizing the icon
+
+The heart icon markup lives in its own include, `Pixelpoems\Wishlist\Includes\WishList_Icon`, which `Product_WishListAction.ss` includes and switches on `$IsInWishList`. To use your own icon (e.g. a sprite `<use>` reference instead of the bundled inline SVGs), override just this one file rather than the whole button - create a template at the same relative path in your project/theme:
+
+```
+app/templates/Pixelpoems/Wishlist/Includes/WishList_Icon.ss
+```
+
+Because the ajax response re-renders the button (and therefore this include) server-side on every add/remove, an overridden icon stays correct after a click too - there's no icon markup duplicated in `wishlist.js` to keep in sync.
 
 ## Translations
 

@@ -15,9 +15,13 @@ class PageControllerExtension extends Extension
 {
     public function onAfterInit(): void
     {
-        // This is a good place to include any JS or CSS needed for the wishlist functionality
-        Requirements::javascript('_resources/vendor/pixelpoems/silvershop-wishlist/client/dist/javascript/wishlist.min.js');
-        Requirements::css('_resources/vendor/pixelpoems/silvershop-wishlist/client/dist/css/wishlist.min.css');
+        if(WishListPage::config()->get('load_default_js')) {
+            Requirements::javascript('_resources/vendor/pixelpoems/silvershop-wishlist/client/dist/javascript/wishlist.min.js');
+        }
+
+        if(WishListPage::config()->get('load_default_css')) {
+            Requirements::css('_resources/vendor/pixelpoems/silvershop-wishlist/client/dist/css/wishlist.min.css');
+        }
     }
 
     public function getWishListPageLink()
