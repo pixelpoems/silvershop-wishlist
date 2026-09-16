@@ -5,32 +5,42 @@ declare(strict_types=1);
 namespace Pixelpoems\Wishlist\Tests\Unit;
 
 use Pixelpoems\Wishlist\Models\WishList;
-use ReflectionProperty;
+use Pixelpoems\Wishlist\Pages\WishListPage;
+use Pixelpoems\Wishlist\Tests\GuestSessionHelper;
 use SilverShop\Page\Product;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Security\Member;
 
 /**
  * Covers Pixelpoems\Wishlist\Models\WishList: current-list resolution,
- * ownership, and the buyable add/remove/dedupe logic.
+ * ownership, the buyable add/remove/dedupe logic, and the guest
+ * (not-logged-in) session list plus its merge into a member on login.
  */
 class WishListTest extends SapphireTest
 {
+    use GuestSessionHelper;
+
     protected static $fixture_file = '../Fixtures/wishlist.yml';
 
     protected function setUp(): void
     {
         parent::setUp();
-        // WishList::current() caches its result in a plain static property
-        // that SapphireTest does not reset between tests, so clear it here
-        // to keep tests isolated from each other.
-        $property = new ReflectionProperty(WishList::class, 'current');
-        $property->setValue(null, null);
+        $this->resetCurrentListCache();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->stopGuestSession();
+        parent::tearDown();
     }
 
     public function testCurrentReturnsNullWhenNoMemberIsLoggedIn()
     {
         $this->logOut();
+        // Don't rely on the class-level default - the host project may
+        // enable this in its own project config (e.g. mysite.yml).
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', false);
 
         $this->assertNull(WishList::current());
     }
@@ -167,5 +177,139 @@ class WishListTest extends SapphireTest
         $list->write();
 
         $this->assertSame($member->ID, $list->OwnerID);
+    }
+
+    public function testCurrentCreatesGuestListWhenNoMemberAndGuestWishlistEnabled()
+    {
+        $this->logOut();
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', true);
+        $this->startGuestSession();
+
+        $current = WishList::current();
+
+        $this->assertNotNull($current);
+        $this->assertSame(0, (int) $current->OwnerID);
+        $this->assertNotEmpty($current->SessionKey);
+    }
+
+    public function testCurrentReusesSameGuestListAcrossRequestsViaSessionToken()
+    {
+        $this->logOut();
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', true);
+        $this->startGuestSession();
+
+        $first = WishList::current();
+        $first->addBuyable($this->objFromFixture(Product::class, 'product1')); // forces write()
+
+        // Simulate a fresh request: clear the static cache but keep the
+        // same (guest) session - and thus the same token - alive.
+        $this->resetCurrentListCache();
+        $second = WishList::current();
+
+        $this->assertSame($first->ID, $second->ID);
+    }
+
+    public function testFindSessionListReturnsNullWithoutAnActiveGuestSession()
+    {
+        $this->logOut();
+
+        $this->assertNull(WishList::findSessionList());
+    }
+
+    public function testFindSessionListReturnsNullForAnUnpersistedGuestList()
+    {
+        $this->logOut();
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', true);
+        $this->startGuestSession();
+
+        // Generates and stores a session token, but the list itself is
+        // never written (lazy write, same as for logged-in members) since
+        // nothing was ever added to it.
+        WishList::current();
+
+        $this->assertNull(WishList::findSessionList());
+    }
+
+    public function testFindSessionListReturnsThePersistedGuestList()
+    {
+        $this->logOut();
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', true);
+        $this->startGuestSession();
+
+        $list = WishList::current();
+        $list->addBuyable($this->objFromFixture(Product::class, 'product1'));
+
+        $found = WishList::findSessionList();
+
+        $this->assertNotNull($found);
+        $this->assertSame($list->ID, $found->ID);
+    }
+
+    public function testMergeSessionListIntoMemberMovesItemsAndDiscardsGuestList()
+    {
+        $this->logOut();
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', true);
+        $this->startGuestSession();
+
+        $guestList = WishList::current();
+        $product = $this->objFromFixture(Product::class, 'product2');
+        $guestList->addBuyable($product);
+        $guestListID = $guestList->ID;
+
+        $member = $this->objFromFixture(Member::class, 'member2');
+        WishList::mergeSessionListIntoMember($member);
+
+        $memberList = WishList::get_for_user($member)->first();
+        $this->assertNotNull($memberList);
+        $this->assertTrue($memberList->hasBuyable($product));
+        $this->assertNull(WishList::get()->byID($guestListID));
+        $this->assertNull(WishList::findSessionList());
+    }
+
+    public function testMergeSessionListIntoMemberDedupesItemsAlreadyOnTheMembersList()
+    {
+        $this->logOut();
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', true);
+        $this->startGuestSession();
+
+        $guestList = WishList::current();
+        // product1 is already on member1's list1 via fixture item1.
+        $product = $this->objFromFixture(Product::class, 'product1');
+        $guestList->addBuyable($product);
+
+        $member = $this->objFromFixture(Member::class, 'member1');
+        WishList::mergeSessionListIntoMember($member);
+
+        $memberList = $this->objFromFixture(WishList::class, 'list1');
+        $this->assertSame(1, $memberList->getBuyableCount());
+    }
+
+    public function testMergeSessionListIntoMemberCreatesAListWhenMemberHasNone()
+    {
+        $this->logOut();
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', true);
+        $this->startGuestSession();
+
+        $guestList = WishList::current();
+        $guestList->addBuyable($this->objFromFixture(Product::class, 'product2'));
+
+        $member = $this->objFromFixture(Member::class, 'member2');
+        $this->assertSame(0, WishList::get_for_user($member)->count());
+
+        WishList::mergeSessionListIntoMember($member);
+
+        $this->assertSame(1, WishList::get_for_user($member)->count());
+    }
+
+    public function testMergeSessionListIntoMemberIsNoopWhenNoGuestListExists()
+    {
+        $this->logOut();
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', true);
+        $this->startGuestSession();
+
+        $member = $this->objFromFixture(Member::class, 'member2');
+        WishList::mergeSessionListIntoMember($member);
+
+        $this->assertSame(0, WishList::get_for_user($member)->count());
     }
 }

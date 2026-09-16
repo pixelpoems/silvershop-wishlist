@@ -6,6 +6,7 @@ namespace Pixelpoems\Wishlist\Controllers;
 
 use PageController;
 use Pixelpoems\Wishlist\Models\WishList;
+use Pixelpoems\Wishlist\Pages\WishListPage;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\HTTPResponse_Exception;
@@ -31,7 +32,7 @@ class WishListPageController extends PageController
     protected function init()
     {
         parent::init();
-        if (!Security::getCurrentUser()) {
+        if (!Security::getCurrentUser() && !WishListPage::config()->get('enable_wishlist_without_login')) {
             return $this->httpError(404);
         }
 

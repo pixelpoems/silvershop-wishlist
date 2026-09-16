@@ -12,3 +12,7 @@ SilverShop\Page\Product:
 SilverShop\Model\Variation\Variation:
   extensions:
     - Pixelpoems\Wishlist\Extensions\CanAddToWishListExtension
+
+SilverStripe\Security\Member:
+  extensions:
+    - Pixelpoems\Wishlist\Extensions\MemberExtension

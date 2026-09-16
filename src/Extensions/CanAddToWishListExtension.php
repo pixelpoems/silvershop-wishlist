@@ -71,31 +71,30 @@ class CanAddToWishListExtension extends Extension
     }
 
     /**
-     * IF this item is an any of the current member's wishlists,
-     * returns the wishlist item records.
+     * IF this item is an any of the current member's (or guest session's)
+     * wishlists, returns the wishlist item records.
      */
     public function WishListItems(): ?DataList
     {
-        $currentMember = Security::getCurrentUser();
-        if (!$currentMember) {
+        $list = WishList::current();
+
+        if (!$list || !$list->exists()) {
             return null;
         }
 
-        $ID = $this->getOwner()->ID;
-        $className = $this->getOwner()->ClassName;
+        return WishListItem::get()->filter([
+            'WishListID' => $list->ID,
+            'BuyableID' => $this->getOwner()->ID,
+            'BuyableClassName' => $this->getOwner()->ClassName,
+        ]);
+    }
 
-        $wishlistIDs = WishList::get()->filter(['OwnerID' => $currentMember->ID])->column('ID');
-
-        // ToDo: Update this if we ever have multiple wishlists
-        if (!isset($wishlistIDs[0])) {
-            return null;
-        }
-
-        return WishListItem::get()
-            ->filter([
-                'WishListID' => $wishlistIDs[0],
-                'BuyableID' => $ID,
-                'BuyableClassName' => $className,
-            ]);
+    /**
+     * Whether the "add to wish list" action should be shown at all -
+     * either the visitor is logged in, or guest wishlists are enabled.
+     */
+    public function WishlistAvailable(): bool
+    {
+        return (bool) Security::getCurrentUser() || (bool) WishListPage::config()->get('enable_wishlist_without_login');
     }
 }

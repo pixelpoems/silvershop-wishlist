@@ -26,6 +26,9 @@ class WishListPageTest extends SapphireTest
     public function testRequireDefaultRecordsCreatesPageWhenNoneExists()
     {
         $this->deleteAllWishListPages();
+        // Don't rely on the class-level default - the host project may
+        // enable this in its own project config (e.g. mysite.yml).
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', false);
 
         (new WishListPage())->requireDefaultRecords();
 
@@ -86,5 +89,33 @@ class WishListPageTest extends SapphireTest
         $sanitisedClass = str_replace('\\', '-', Product::class);
         $this->assertStringContainsString("remove/42/{$sanitisedClass}", $url);
         $this->assertStringContainsString(SecurityToken::inst()->getName() . '=', $url);
+    }
+
+    public function testRequireDefaultRecordsSetsCanViewTypeToAnyoneWhenGuestWishlistEnabled()
+    {
+        $this->deleteAllWishListPages();
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', true);
+
+        (new WishListPage())->requireDefaultRecords();
+
+        $this->assertSame('Anyone', WishListPage::get()->first()->CanViewType);
+    }
+
+    public function testCanViewIgnoresCanViewTypeWhenGuestWishlistEnabled()
+    {
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', true);
+        $page = WishListPage::create(['Title' => 'Wish List', 'CanViewType' => 'LoggedInUsers']);
+        $page->write();
+
+        $this->assertTrue($page->canView(null));
+    }
+
+    public function testCanViewFallsBackToCanViewTypeWhenGuestWishlistDisabled()
+    {
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', false);
+        $page = WishListPage::create(['Title' => 'Wish List', 'CanViewType' => 'LoggedInUsers']);
+        $page->write();
+
+        $this->assertFalse($page->canView(null));
     }
 }

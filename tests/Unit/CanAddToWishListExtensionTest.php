@@ -7,8 +7,10 @@ namespace Pixelpoems\Wishlist\Tests\Unit;
 use Pixelpoems\Wishlist\Extensions\CanAddToWishListExtension;
 use Pixelpoems\Wishlist\Models\WishList;
 use Pixelpoems\Wishlist\Pages\WishListPage;
+use Pixelpoems\Wishlist\Tests\GuestSessionHelper;
 use SilverShop\Model\Variation\Variation;
 use SilverShop\Page\Product;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 
 /**
@@ -17,6 +19,8 @@ use SilverStripe\Dev\SapphireTest;
  */
 class CanAddToWishListExtensionTest extends SapphireTest
 {
+    use GuestSessionHelper;
+
     protected static $fixture_file = '../Fixtures/wishlist.yml';
 
     protected static $required_extensions = [
@@ -27,12 +31,19 @@ class CanAddToWishListExtensionTest extends SapphireTest
     protected function setUp(): void
     {
         parent::setUp();
+        $this->resetCurrentListCache();
 
         // WishListAddLink()/WishListRemoveLink() return '#' unless a
         // WishListPage exists.
         if (!WishListPage::get()->exists()) {
             WishListPage::create(['Title' => 'Wish List'])->write();
         }
+    }
+
+    protected function tearDown(): void
+    {
+        $this->stopGuestSession();
+        parent::tearDown();
     }
 
     public function testWishListAddLinkForPlainProduct()
@@ -128,5 +139,58 @@ class CanAddToWishListExtensionTest extends SapphireTest
         $this->assertSame(1, $items->count());
         $this->assertSame($product1->ID, $items->first()->BuyableID);
         $this->assertSame(0, $product2->WishListItems()->count());
+    }
+
+    public function testWishListItemsReturnsNullForGuestWhenGuestWishlistDisabled()
+    {
+        $this->logOut();
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', false);
+        $product = $this->objFromFixture(Product::class, 'product1');
+
+        $this->assertNull($product->WishListItems());
+    }
+
+    public function testWishListItemsReturnsGuestItemsWhenGuestWishlistEnabled()
+    {
+        $this->logOut();
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', true);
+        $this->startGuestSession();
+
+        $product = $this->objFromFixture(Product::class, 'product1');
+        WishList::current()->addBuyable($product);
+
+        $items = $product->WishListItems();
+
+        $this->assertNotNull($items);
+        $this->assertSame(1, $items->count());
+        $this->assertTrue($product->IsInWishList());
+    }
+
+    public function testWishlistAvailableTrueWhenMemberIsLoggedIn()
+    {
+        $this->logInAs('member1');
+        $product = $this->objFromFixture(Product::class, 'product1');
+
+        $this->assertTrue($product->WishlistAvailable());
+    }
+
+    public function testWishlistAvailableFalseForGuestWhenGuestWishlistDisabled()
+    {
+        $this->logOut();
+        // Don't rely on the class-level default - the host project may
+        // enable this in its own project config (e.g. mysite.yml).
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', false);
+        $product = $this->objFromFixture(Product::class, 'product1');
+
+        $this->assertFalse($product->WishlistAvailable());
+    }
+
+    public function testWishlistAvailableTrueForGuestWhenGuestWishlistEnabled()
+    {
+        $this->logOut();
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', true);
+        $product = $this->objFromFixture(Product::class, 'product1');
+
+        $this->assertTrue($product->WishlistAvailable());
     }
 }

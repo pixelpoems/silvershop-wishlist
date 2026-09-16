@@ -32,6 +32,11 @@ This runs Webpack and regenerates `client/dist/javascript/wishlist.min.js` and `
 ## What it does
 
 Every logged-in member has one wishlist, created automatically the first time they add something to it. Products and variations get an add/remove link (via an extension applied to Silvershop's `Product` and `Variation` classes), which posts to a dedicated `WishListPage` that lists, adds and removes items. A small JS enhancement intercepts clicks on add/remove buttons and updates the page (e.g. a nav badge showing the item count) in place, without a full reload.
+To enable for non-logged-in users, enable it threw your yml config:
+```yaml
+Pixelpoems\Wishlist\Pages\WishListPage:
+  enable_wishlist_without_login: true
+```
 
 ### Auto-created page
 

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Pixelpoems\Wishlist\Models;
 
+use Pixelpoems\Wishlist\Pages\WishListPage;
+use SilverStripe\Control\Controller;
+use SilverStripe\Control\Session;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Member;
@@ -19,6 +22,14 @@ class WishList extends DataObject
 
     private static array $db = [
         'Title' => 'Varchar(255)',
+        // Random token for guest (not-logged-in) wishlists, mirrored into the
+        // session. NOT the PHP session id - that gets regenerated on login
+        // (see MemberExtension), so it can't be used as a lookup key.
+        'SessionKey' => 'Varchar(64)',
+    ];
+
+    private static array $indexes = [
+        'SessionKey' => true,
     ];
 
     private static array $has_one = [
@@ -29,23 +40,45 @@ class WishList extends DataObject
         'Items' => WishListItem::class,
     ];
 
+    private const SESSION_KEY_NAME = 'Wishlist.GuestToken';
+
     protected static $current;
 
     public static function current(): ?WishList
     {
-        if (!Security::getCurrentUser()) {
-            return null;
+        $currentUser = Security::getCurrentUser();
+
+        if (!$currentUser) {
+            if (!WishListPage::config()->get('enable_wishlist_without_login')) {
+                // No User logged in and wishlist without login is disabled, return null
+                return null;
+            }
+
+            if (!isset(self::$current) || !self::$current) {
+                $list = self::findSessionList();
+
+                if (!$list || !$list->exists()) {
+                    self::$current = WishList::create([
+                        'Title'      => 'Wish List',
+                        'SessionKey' => self::getOrCreateSessionKey(),
+                    ]);
+                } else {
+                    self::$current = $list;
+                }
+            }
+
+            return self::$current;
         }
 
         if (!isset(self::$current) || !self::$current) {
-            $list = WishList::get()->filter(['OwnerID' => Security::getCurrentUser()->ID])
+            $list = WishList::get()->filter(['OwnerID' => $currentUser->ID])
                 ->sort(['LastEdited' => 'DESC'])
                 ->first();
 
             if (!$list || !$list->exists()) {
                 self::$current = WishList::create([
                     'Title'     => 'Wish List',
-                    'OwnerID'   => Security::getCurrentUser()->ID,
+                    'OwnerID'   => $currentUser->ID,
                 ]);
             } else {
                 self::$current = $list;
@@ -74,6 +107,91 @@ class WishList extends DataObject
         }
 
         return WishList::get()->filter(['OwnerID' => $member->ID]);
+    }
+
+    /**
+     * Look up the guest wishlist for the token stored in the current session,
+     * without creating one if none exists yet.
+     */
+    public static function findSessionList(): ?WishList
+    {
+        $token = self::getSessionKey();
+
+        if (!$token) {
+            return null;
+        }
+
+        return WishList::get()->filter(['SessionKey' => $token])->first();
+    }
+
+    /**
+     * Merge a guest (session-based) wishlist into a member's wishlist after
+     * login, then discard the guest list and its session token.
+     */
+    public static function mergeSessionListIntoMember(Member $member): void
+    {
+        $sessionList = self::findSessionList();
+
+        if (!$sessionList || !$sessionList->exists()) {
+            self::clearSessionKey();
+            return;
+        }
+
+        $memberList = WishList::get()->filter(['OwnerID' => $member->ID])
+            ->sort(['LastEdited' => 'DESC'])
+            ->first();
+
+        if (!$memberList || !$memberList->exists()) {
+            $memberList = WishList::create(['Title' => 'Wish List', 'OwnerID' => $member->ID]);
+            $memberList->write();
+        }
+
+        foreach ($sessionList->Items() as $item) {
+            $buyable = $item->getBuyable();
+
+            if ($buyable) {
+                $memberList->addBuyable($buyable);
+            }
+        }
+
+        $sessionList->removeAllBuyables();
+        $sessionList->delete();
+        self::clearSessionKey();
+
+        self::$current = $memberList;
+    }
+
+    private static function getSession(): ?Session
+    {
+        return Controller::curr()?->getRequest()?->getSession();
+    }
+
+    private static function getSessionKey(): ?string
+    {
+        return self::getSession()?->get(self::SESSION_KEY_NAME);
+    }
+
+    private static function getOrCreateSessionKey(): ?string
+    {
+        $session = self::getSession();
+
+        if (!$session) {
+            return null;
+        }
+
+        $token = $session->get(self::SESSION_KEY_NAME);
+
+        if (!$token) {
+            $token = bin2hex(random_bytes(16));
+            $session->set(self::SESSION_KEY_NAME, $token);
+        }
+
+        return $token;
+    }
+
+    private static function clearSessionKey(): void
+    {
+        self::getSession()?->clear(self::SESSION_KEY_NAME);
     }
 
     protected function onBeforeWrite()

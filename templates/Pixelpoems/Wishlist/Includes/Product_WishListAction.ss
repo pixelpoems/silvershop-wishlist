@@ -1,4 +1,4 @@
-<% if $CurrentUser %>
+<% if $WishlistAvailable %>
     <ul id="product--actions-{$ProductID} <% if $Variation %>variation--actions-{$ID}<% end_if %>"
         class="wishlist productActions <% if $IsInCart %>inCart<% else %>notInCart<% end_if %> <% if $IsInWishList %>inWishList<% else %>notInWishList<% end_if %> product--actions-{$ProductID} <% if $Variation %>variation--actions-{$ID}<% end_if %>"
     >

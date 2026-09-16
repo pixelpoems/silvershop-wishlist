@@ -26,15 +26,21 @@ class PageControllerExtension extends Extension
 
     public function getWishListPageLink()
     {
-        if (!Security::getCurrentUser()) {
+        $wishlistLink = null;
+        if(($wishListPage = WishListPage::inst()) instanceof DataObject) {
+            $wishlistLink = $wishListPage->AbsoluteLink();
+        }
+
+        if(!$wishlistLink) return null;
+
+        if (Security::getCurrentUser()) {
+            return $wishlistLink;
+        } else {
+            if(WishListPage::config()->get('enable_wishlist_without_login')) {
+                return $wishlistLink;
+            }
             return Security::login_url();
         }
-
-        if (($WishListPage = WishListPage::inst()) instanceof DataObject) {
-            return $WishListPage->AbsoluteLink();
-        }
-
-        return null;
     }
 
     public function getWishListItemCount()

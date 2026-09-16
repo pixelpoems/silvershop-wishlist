@@ -1,10 +1,7 @@
 # Fixture data shared by the tests in tests/Unit and tests/Functional.
 #
-# NOTE: Product/Variation field names below (BasePrice, Price, ...) are best
-# guesses based on how this module's code uses silvershop/core (sellingPrice(),
-# Price.Nice, Variations()). Run `composer install` and check the actual
-# SilverShop\Page\Product / SilverShop\Model\Variation\Variation schema once
-# vendor/ is available, and adjust if needed.
+# Product.BasePrice / Variation.Price are confirmed against the installed
+# silvershop/core schema (SilverShop\Page\Product / SilverShop\Model\Variation\Variation).
 
 SilverStripe\Security\Member:
   member1:

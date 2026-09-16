@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pixelpoems\Wishlist\Pages;
 
+use SilverStripe\Core\Config\Configurable;
 use SilverStripe\ORM\DataObject;
 use Page;
 use Pixelpoems\Wishlist\Controllers\WishListPageController;
@@ -12,6 +13,7 @@ use SilverStripe\Security\SecurityToken;
 
 class WishListPage extends Page
 {
+    use Configurable;
 
     private static string $table_name = 'WishListPage';
 
@@ -30,6 +32,8 @@ class WishListPage extends Page
 
     private static bool $load_default_js = true;
 
+    private static bool $enable_wishlist_without_login = false;
+
     public function getControllerName(): string
     {
         return WishListPageController::class;
@@ -38,6 +42,15 @@ class WishListPage extends Page
     public static function inst(): ?DataObject
     {
         return self::get()->first();
+    }
+
+    public function canView($member = null)
+    {
+        if (static::config()->get('enable_wishlist_without_login')) {
+            return true;
+        }
+
+        return parent::canView($member);
     }
 
     /**
@@ -83,7 +96,7 @@ class WishListPage extends Page
             $rec->Title = 'Wish List';
             $rec->ShowInSearch = false;
             $rec->ShowInMenus = false;
-            $rec->CanViewType = 'LoggedInUsers';
+            $rec->CanViewType = self::config()->get('enable_wishlist_without_login') ? 'Anyone' : 'LoggedInUsers';
             $rec->write();
             $rec->publishRecursive();
             $rec->flushCache();

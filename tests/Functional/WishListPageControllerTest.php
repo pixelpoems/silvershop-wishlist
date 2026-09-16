@@ -9,6 +9,7 @@ use Pixelpoems\Wishlist\Models\WishList;
 use Pixelpoems\Wishlist\Pages\WishListPage;
 use SilverShop\Model\Variation\Variation;
 use SilverShop\Page\Product;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\SecurityToken;
@@ -71,6 +72,9 @@ class WishListPageControllerTest extends FunctionalTest
     public function testPageReturns404WhenNobodyIsLoggedIn()
     {
         $this->logOut();
+        // Don't rely on the class-level default - the host project may
+        // enable this in its own project config (e.g. mysite.yml).
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', false);
         $page = WishListPage::get()->first();
 
         $response = $this->get($page->RelativeLink());
@@ -188,5 +192,35 @@ class WishListPageControllerTest extends FunctionalTest
         $controller = WishListPageController::create(WishListPage::get()->first());
 
         $this->assertSame($member->ID, $controller->CurrentList()->OwnerID);
+    }
+
+    public function testPageIsAccessibleForGuestsWhenGuestWishlistIsEnabled()
+    {
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', true);
+        $this->logOut();
+        $page = WishListPage::get()->first();
+
+        $response = $this->get($page->RelativeLink());
+
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testAddActionAddsItemToAGuestSessionListWhenEnabled()
+    {
+        Config::modify()->set(WishListPage::class, 'enable_wishlist_without_login', true);
+        $this->logOut();
+        $product = $this->objFromFixture(Product::class, 'product2');
+
+        $response = $this->get(WishListPage::add_item_link($product->ID, Product::class));
+
+        $this->assertContains($response->getStatusCode(), [200, 301, 302, 303]);
+
+        // Verified via the DB rather than WishList::findSessionList() -
+        // Controller::curr() no longer points at this request's session by
+        // the time the test method resumes after $this->get() returns.
+        $guestList = WishList::get()->filter('OwnerID', 0)->first();
+        $this->assertNotNull($guestList);
+        $this->assertNotEmpty($guestList->SessionKey);
+        $this->assertTrue($guestList->hasBuyable($product));
     }
 }
